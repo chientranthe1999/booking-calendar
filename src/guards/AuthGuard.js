@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 // hooks
 import useAuth from '../hooks/useAuth';
-import Login from '../pages/auth/login';
+import Login from '../pages/login';
 // components
 import LoadingScreen from '../components/LoadingScreen';
 

@@ -3,16 +3,17 @@ import { styled } from '@mui/material/styles';
 import { Box, Card, Stack, Container, Typography } from '@mui/material';
 
 // hooks
-import useAuth from '../../hooks/useAuth';
-import useResponsive from '../../hooks/useResponsive';
+import useAuth from '../hooks/useAuth';
+import useResponsive from '../hooks/useResponsive';
 // guards
-import GuestGuard from '../../guards/GuestGuard';
+import GuestGuard from '../guards/GuestGuard';
 // components
-import Page from '../../components/Page';
-import Logo from '../../components/Logo';
-import Image from '../../components/Image';
+import Page from '../components/Page';
+import Logo from '../components/Logo';
+import Image from '../components/Image';
 // sections
-import { LoginForm } from '../../sections/auth/login';
+import { LoginForm } from '../sections/auth/login';
+import AuthFirebaseSocial from '../sections/auth/AuthFirebaseSocial';
 
 // ----------------------------------------------------------------------
 
@@ -90,6 +91,7 @@ export default function Login() {
                 <Image disabledEffect alt="jwt" src="/image/ic_jwt.png" sx={{ width: 32, height: 32 }} />
               </Stack>
 
+              <AuthFirebaseSocial />
               <LoginForm />
             </ContentStyle>
           </Container>

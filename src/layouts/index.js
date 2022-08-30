@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types';
 // guards
-import AuthGuard from '../guards/AuthGuard';
+// import AuthGuard from '../guards/AuthGuard';
+import GuestGuard from '../guards/GuestGuard';
 // components
 import MainLayout from './main';
 import DashboardLayout from './dashboard';
@@ -23,8 +24,10 @@ export default function Layout({ variant = 'dashboard', children }) {
   }
 
   return (
-    <AuthGuard>
+    // <AuthGuard>
+    <GuestGuard>
       <DashboardLayout> {children} </DashboardLayout>
-    </AuthGuard>
+    </GuestGuard>
+    // </AuthGuard>
   );
 }

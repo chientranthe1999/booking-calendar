@@ -27,6 +27,8 @@
     "date-fns": "^2.29.2",
     "framer-motion": "^7.2.1",
     "highlight.js": "^11.6.0",
+    "i": "^0.3.7",
+    "i18next-browser-languagedetector": "^6.1.5",
     "js-cookie": "^3.0.1",
     "jwt-decode": "^3.1.2",
     "lodash": "^4.17.21",
