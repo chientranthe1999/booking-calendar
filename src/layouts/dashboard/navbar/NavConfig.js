@@ -59,19 +59,19 @@ const navConfig = [
       },
 
       // E-COMMERCE
-      // {
-      //   title: 'e-commerce',
-      //   path: PATH_DASHBOARD.eCommerce.root,
-      //   icon: ICONS.cart,
-      //   children: [
-      //     { title: 'shop', path: PATH_DASHBOARD.eCommerce.shop },
-      //     { title: 'product', path: PATH_DASHBOARD.eCommerce.demoView },
-      //     { title: 'list', path: PATH_DASHBOARD.eCommerce.list },
-      //     { title: 'create', path: PATH_DASHBOARD.eCommerce.new },
-      //     { title: 'edit', path: PATH_DASHBOARD.eCommerce.demoEdit },
-      //     { title: 'checkout', path: PATH_DASHBOARD.eCommerce.checkout },
-      //   ],
-      // },
+      {
+        title: 'e-commerce',
+        path: PATH_DASHBOARD.eCommerce.root,
+        icon: ICONS.cart,
+        children: [
+          { title: 'shop', path: PATH_DASHBOARD.eCommerce.shop },
+          { title: 'product', path: PATH_DASHBOARD.eCommerce.demoView },
+          { title: 'list', path: PATH_DASHBOARD.eCommerce.list },
+          { title: 'create', path: PATH_DASHBOARD.eCommerce.new },
+          { title: 'edit', path: PATH_DASHBOARD.eCommerce.demoEdit },
+          { title: 'checkout', path: PATH_DASHBOARD.eCommerce.checkout },
+        ],
+      },
 
       // INVOICE
       // {
