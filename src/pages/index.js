@@ -1,7 +1,6 @@
 import { useState } from 'react';
 
 // layouts
-import Layout from '../layouts';
 import Page from '../components/Page';
 // components
 import * as Yup from 'yup';
@@ -124,13 +123,7 @@ export default function Appoinment() {
             </Stack>
 
             <Stack direction="row">
-              <LoadingButton
-                loading={isSubmitting}
-                size="large"
-                type="submit"
-                variant="contained"
-                sx={{ marginLeft: 'auto' }}
-              >
+              <LoadingButton loading={isSubmitting} size="large" type="submit" variant="contained" sx={{ marginLeft: 'auto' }}>
                 Tạo mới
               </LoadingButton>
             </Stack>

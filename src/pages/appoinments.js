@@ -10,17 +10,23 @@ import Scrollbar from '../components/Scrollbar';
 // @mui
 import { Box, Card, Container, TableHead, Typography, TableContainer, TableRow, TableBody, TableCell, Table, Stack } from '@mui/material';
 import Label from '../components/Label';
-import { styled } from '@mui/material/styles';
-import { DatePicker } from '@mui/x-date-pickers';
-import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 // ----------------------------------------------------------------------
 import { LoadingButton } from '@mui/lab';
 // ----------------------------------------------------------------------
 import { useTheme } from '@mui/material/styles';
 import { useForm } from 'react-hook-form';
+import { getAppointments } from '../apis/appointment';
 
 Appoinment.getLayout = function getLayout(page) {
   return <Layout>{page}</Layout>;
+};
+
+Appoinment.getInitialProps = async () => {
+  const { data } = await getAppointments();
+
+  return {
+    appoinments: data,
+  };
 };
 
 const APPOINMENT_STATUS = {
@@ -30,13 +36,13 @@ const APPOINMENT_STATUS = {
   DONE: 4,
 };
 
-export default function Appoinment() {
+export default function Appoinment({ appoinments }) {
   const headLabel = [
     { id: 1, label: 'Họ và tên' },
     { id: 2, label: 'Email' },
     { id: 3, label: 'Số điện thoại' },
     { id: 4, label: 'Thời gian' },
-    { id: 5, label: 'Địa chỉ' },
+    { id: 5, label: 'CCID' },
     { id: 6, label: 'Trạng thái' },
     { id: 7, label: '' },
   ];
@@ -48,29 +54,6 @@ export default function Appoinment() {
   const methods = useForm({
     defaultValues,
   });
-
-  const isNotFound = true;
-
-  const dataTest = [
-    {
-      id: 1,
-      name: 'ChienTT',
-      email: 'tranthechien2012@gmail.com',
-      phonenumber: '08685475981',
-      address: 'Không có',
-      time: '14:30 15/09/2022',
-      status: 2,
-    },
-    {
-      id: 2,
-      name: 'ChienTT',
-      email: 'tranthechien2012@gmail.com',
-      phonenumber: '08685475981',
-      address: 'Không có',
-      time: '14:30 15/09/2022',
-      status: 1,
-    },
-  ];
 
   const getLabelInfor = (status) => {
     const convertedStatus = Number(status);
@@ -111,7 +94,7 @@ export default function Appoinment() {
 
   const onSubmit = () => {};
 
-  const [appoinments, setAppointment] = useState(dataTest);
+  const [tableData, setAppointment] = useState(appoinments);
 
   return (
     <Page title="Appoinment List">
@@ -149,13 +132,13 @@ export default function Appoinment() {
                 </TableHead>
 
                 <TableBody>
-                  {appoinments.map((row) => (
+                  {tableData.map((row) => (
                     <TableRow hover key={row.id}>
-                      <TableCell align="center">{row.name}</TableCell>
-                      <TableCell align="center">{row.email}</TableCell>
-                      <TableCell align="center">{row.phonenumber}</TableCell>
-                      <TableCell align="center">{row.time}</TableCell>
-                      <TableCell align="center">{row.address}</TableCell>
+                      <TableCell align="center">{row.user_name}</TableCell>
+                      <TableCell align="center">{row.user_email}</TableCell>
+                      <TableCell align="center">{row.user_phone}</TableCell>
+                      <TableCell align="center">{`${row.time} ${row.date}`} </TableCell>
+                      <TableCell align="center">{row.user_ccid}</TableCell>
                       <TableCell align="center">{getLabelInfor(row.status)}</TableCell>
                       <TableCell align="right">
                         <ActionButton status={row.status} />
