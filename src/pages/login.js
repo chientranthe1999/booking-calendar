@@ -3,7 +3,6 @@ import { styled } from '@mui/material/styles';
 import { Box, Card, Stack, Container, Typography } from '@mui/material';
 
 // hooks
-import useAuth from '../hooks/useAuth';
 import useResponsive from '../hooks/useResponsive';
 // guards
 import GuestGuard from '../guards/GuestGuard';
@@ -61,7 +60,6 @@ const ContentStyle = styled('div')(({ theme }) => ({
 // ----------------------------------------------------------------------
 
 export default function Login() {
-  const { method } = useAuth();
   const mdUp = useResponsive('up', 'md');
 
   return (

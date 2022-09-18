@@ -27,13 +27,13 @@ export default function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
 
   const LoginSchema = Yup.object().shape({
-    email: Yup.string().email('Email must be a valid email address').required('Email is required'),
+    phone: Yup.string().required('Phone number is required'),
     password: Yup.string().required('Password is required'),
   });
 
   const defaultValues = {
-    email: 'admin@gmail.com',
-    password: '123456',
+    phone: '',
+    password: '',
   };
 
   const methods = useForm({
@@ -50,9 +50,9 @@ export default function LoginForm() {
 
   const onSubmit = async (data) => {
     try {
-      await login(data.email, data.password);
+      await login(data.phone, data.password);
     } catch (error) {
-      console.error(error);
+      console.log(error);
       reset();
       if (isMountedRef.current) {
         setError('afterSubmit', { ...error, message: error.message });
@@ -63,13 +63,13 @@ export default function LoginForm() {
   return (
     <FormProvider methods={methods} onSubmit={handleSubmit(onSubmit)}>
       <Stack spacing={3}>
-        {!!errors.afterSubmit && <Alert severity="error">{errors.afterSubmit.message}</Alert>}
+        {/* {!!errors.afterSubmit && <Alert severity="error">{errors.afterSubmit.message}</Alert>} */}
 
-        <RHFTextField name="email" label="Email address" />
+        <RHFTextField name="phone" label="Số điện thoại" />
 
         <RHFTextField
           name="password"
-          label="Password"
+          label="Mật khẩu"
           type={showPassword ? 'text' : 'password'}
           InputProps={{
             endAdornment: (

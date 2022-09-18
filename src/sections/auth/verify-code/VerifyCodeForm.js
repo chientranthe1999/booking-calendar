@@ -59,7 +59,6 @@ export default function VerifyCodeForm() {
   const onSubmit = async (data) => {
     try {
       await new Promise((resolve) => setTimeout(resolve, 500));
-      console.log('code:', Object.values(data).join(''));
 
       enqueueSnackbar('Verify success!');
 
@@ -130,15 +129,7 @@ export default function VerifyCodeForm() {
         ))}
       </Stack>
 
-      <LoadingButton
-        fullWidth
-        size="large"
-        type="submit"
-        variant="contained"
-        loading={isSubmitting}
-        disabled={!isValid}
-        sx={{ mt: 3 }}
-      >
+      <LoadingButton fullWidth size="large" type="submit" variant="contained" loading={isSubmitting} disabled={!isValid} sx={{ mt: 3 }}>
         Verify
       </LoadingButton>
     </form>

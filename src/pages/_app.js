@@ -22,8 +22,8 @@ import App from 'next/app';
 import { Provider as ReduxProvider } from 'react-redux';
 import { PersistGate } from 'redux-persist/lib/integration/react';
 // @mui
-import AdapterDateFns from '@mui/lab/AdapterDateFns';
-import LocalizationProvider from '@mui/lab/LocalizationProvider';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 // redux
 import { store, persistor } from '../redux/store';
 // utils
@@ -73,28 +73,28 @@ export default function MyApp(props) {
       <AuthProvider>
         <ReduxProvider store={store}>
           <PersistGate loading={null} persistor={persistor}>
-            {/* <LocalizationProvider dateAdapter={AdapterDateFns}> */}
-            <CollapseDrawerProvider>
-              <SettingsProvider defaultSettings={settings}>
-                <ThemeProvider>
-                  <NotistackProvider>
-                    <MotionLazyContainer>
-                      <ThemeColorPresets>
-                        <ThemeLocalization>
-                          <RtlLayout>
-                            <ChartStyle />
-                            <Settings />
-                            <ProgressBar />
-                            {getLayout(<Component {...pageProps} />)}
-                          </RtlLayout>
-                        </ThemeLocalization>
-                      </ThemeColorPresets>
-                    </MotionLazyContainer>
-                  </NotistackProvider>
-                </ThemeProvider>
-              </SettingsProvider>
-            </CollapseDrawerProvider>
-            {/* </LocalizationProvider> */}
+            <LocalizationProvider dateAdapter={AdapterDateFns}>
+              <CollapseDrawerProvider>
+                <SettingsProvider defaultSettings={settings}>
+                  <ThemeProvider>
+                    <NotistackProvider>
+                      <MotionLazyContainer>
+                        <ThemeColorPresets>
+                          <ThemeLocalization>
+                            <RtlLayout>
+                              <ChartStyle />
+                              <Settings />
+                              <ProgressBar />
+                              {getLayout(<Component {...pageProps} />)}
+                            </RtlLayout>
+                          </ThemeLocalization>
+                        </ThemeColorPresets>
+                      </MotionLazyContainer>
+                    </NotistackProvider>
+                  </ThemeProvider>
+                </SettingsProvider>
+              </CollapseDrawerProvider>
+            </LocalizationProvider>
           </PersistGate>
         </ReduxProvider>
       </AuthProvider>
