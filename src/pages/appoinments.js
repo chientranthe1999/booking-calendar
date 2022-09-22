@@ -10,12 +10,14 @@ import Scrollbar from '../components/Scrollbar';
 // @mui
 import { Box, Card, Container, TableHead, Typography, TableContainer, TableRow, TableBody, TableCell, Table, Stack } from '@mui/material';
 import Label from '../components/Label';
+
+import DialogAnimate from '../components/animate/DialogAnimate';
 // ----------------------------------------------------------------------
 import { LoadingButton } from '@mui/lab';
 // ----------------------------------------------------------------------
 import { useTheme } from '@mui/material/styles';
 import { useForm } from 'react-hook-form';
-import { getAppointments } from '../apis/appointment';
+import { getAppointments, finishAppointment, cancelAppointment, acceptAppointment } from '../apis/appointment';
 
 Appoinment.getLayout = function getLayout(page) {
   return <Layout>{page}</Layout>;
@@ -43,6 +45,7 @@ export default function Appoinment({ appoinments }) {
     { id: 3, label: 'Số điện thoại' },
     { id: 4, label: 'Thời gian' },
     { id: 5, label: 'CCID' },
+    { id: 10, label: 'Mô tả' },
     { id: 6, label: 'Trạng thái' },
     { id: 7, label: '' },
   ];
@@ -54,6 +57,8 @@ export default function Appoinment({ appoinments }) {
   const methods = useForm({
     defaultValues,
   });
+
+  const theme = useTheme();
 
   const getLabelInfor = (status) => {
     const convertedStatus = Number(status);
@@ -96,12 +101,39 @@ export default function Appoinment({ appoinments }) {
 
   const [tableData, setAppointment] = useState(appoinments);
 
+  const updateData = async () => {
+    const { data } = await getAppointments();
+    setAppointment(data);
+  };
+
   return (
     <Page title="Appoinment List">
       <Container maxWidth="lg">
         <Typography variant="h3" gutterBottom>
           Danh sách cuộc họp
         </Typography>
+        <DialogAnimate open={false}>
+          <Box sx={{ p: 3 }}>
+            <Typography variant="h4" sx={{ pb: 3 }}>
+              Xác nhận thời gian gặp mặt
+            </Typography>
+
+            <FormProvider methods={methods} onSubmit={handleSubmit(onSubmit)}>
+              <Stack spacing={3} mb={3}>
+                <RHFTextField label="Time" name="phonenumber" />
+                <RHFTextField label="Ngày" name="phonenumber" />
+              </Stack>
+            </FormProvider>
+            <Stack direction="row" spacing={1} sx={{ justifyContent: 'end' }}>
+              <LoadingButton loading={false} size="medium" type="submit" variant="contained" sx={{ backgroundColor: theme.palette.warning.dark }}>
+                Hủy
+              </LoadingButton>
+              <LoadingButton loading={false} size="medium" type="submit" variant="contained">
+                Chấp nhận
+              </LoadingButton>
+            </Stack>
+          </Box>
+        </DialogAnimate>
 
         {/* search form */}
         {/* <Card sx={{ py: 2 }}> */}
@@ -137,16 +169,15 @@ export default function Appoinment({ appoinments }) {
                       <TableCell align="center">{row.user_name}</TableCell>
                       <TableCell align="center">{row.user_email}</TableCell>
                       <TableCell align="center">{row.user_phone}</TableCell>
-                      <TableCell align="center">{`${row.time} ${row.date}`} </TableCell>
+                      <TableCell align="center">{`${row.accepted_time} ${row.date}`} </TableCell>
                       <TableCell align="center">{row.user_ccid}</TableCell>
+                      <TableCell align="center">{row.description}</TableCell>
                       <TableCell align="center">{getLabelInfor(row.status)}</TableCell>
                       <TableCell align="right">
-                        <ActionButton status={row.status} />
+                        <ActionButton status={row.status} id={row.id} updateData={() => updateData()} />
                       </TableCell>
                     </TableRow>
                   ))}
-
-                  {/* <TableNoData isNotFound={isNotFound} /> */}
                 </TableBody>
               </Table>
             </TableContainer>
@@ -157,10 +188,30 @@ export default function Appoinment({ appoinments }) {
   );
 }
 
-const ActionButton = ({ status }) => {
+const ActionButton = ({ status, id, updateData }) => {
   const isSubmitting = false;
 
   const theme = useTheme();
+
+  const handleAppointmentAction = async (id, flag) => {
+    try {
+      switch (flag) {
+        case APPOINMENT_STATUS.ACCEPTED:
+          await acceptAppointment(id, { accepted_time: '12:00' });
+          break;
+        case APPOINMENT_STATUS.CANCEL:
+          await cancelAppointment(id);
+          break;
+        case APPOINMENT_STATUS.DONE:
+          await finishAppointment(id);
+          break;
+      }
+
+      updateData();
+    } catch (e) {
+      console.log(e);
+    }
+  };
 
   switch (status) {
     case APPOINMENT_STATUS.WATING:
@@ -171,6 +222,7 @@ const ActionButton = ({ status }) => {
             size="small"
             type="submit"
             variant="contained"
+            onClick={() => handleAppointmentAction(id, APPOINMENT_STATUS.ACCEPTED)}
             sx={{ backgroundColor: theme.palette.secondary.main, minWidth: '100px' }}
           >
             Chấp nhận
@@ -180,6 +232,7 @@ const ActionButton = ({ status }) => {
             size="small"
             type="submit"
             variant="contained"
+            onClick={() => handleAppointmentAction(id, APPOINMENT_STATUS.CANCEL)}
             sx={{ backgroundColor: theme.palette.warning.dark, minWidth: '100px' }}
           >
             Hủy
@@ -189,7 +242,14 @@ const ActionButton = ({ status }) => {
 
     case APPOINMENT_STATUS.ACCEPTED:
       return (
-        <LoadingButton loading={isSubmitting} size="small" type="submit" variant="contained" fullWidth>
+        <LoadingButton
+          loading={isSubmitting}
+          size="small"
+          type="submit"
+          variant="contained"
+          fullWidth
+          onClick={() => handleAppointmentAction(id, APPOINMENT_STATUS.DONE)}
+        >
           Hoàn thành
         </LoadingButton>
       );
