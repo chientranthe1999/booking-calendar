@@ -1,8 +1,9 @@
 import { createContext, useEffect, useReducer } from 'react';
 import PropTypes from 'prop-types';
 // utils
-import axios from '../utils/axios';
 import { isValidToken, setSession } from '../utils/jwt';
+
+import { login } from '../apis/auth';
 
 // ----------------------------------------------------------------------
 
@@ -66,56 +67,54 @@ AuthProvider.propTypes = {
 function AuthProvider({ children }) {
   const [state, dispatch] = useReducer(reducer, initialState);
 
-  useEffect(() => {
-    const initialize = async () => {
-      try {
-        const accessToken = window.localStorage.getItem('accessToken');
+  // useEffect(() => {
+  //   const initialize = async () => {
+  //     try {
+  //       const accessToken = window.localStorage.getItem('accessToken');
 
-        if (accessToken && isValidToken(accessToken)) {
-          setSession(accessToken);
+  //       // if (accessToken && isValidToken(accessToken)) {
+  //       //   setSession(accessToken);
 
-          const response = await axios.get('/api/account/my-account');
-          const { user } = response.data;
+  //       //   const response = await login();
+  //       //   const { user } = response.data;
 
-          dispatch({
-            type: 'INITIALIZE',
-            payload: {
-              isAuthenticated: true,
-              user,
-            },
-          });
-        } else {
-          dispatch({
-            type: 'INITIALIZE',
-            payload: {
-              isAuthenticated: false,
-              user: null,
-            },
-          });
-        }
-      } catch (err) {
-        console.error(err);
-        dispatch({
-          type: 'INITIALIZE',
-          payload: {
-            isAuthenticated: false,
-            user: null,
-          },
-        });
-      }
-    };
+  //       //   dispatch({
+  //       //     type: 'INITIALIZE',
+  //       //     payload: {
+  //       //       isAuthenticated: true,
+  //       //       user,
+  //       //     },
+  //       //   });
+  //       // } else {
+  //       //   dispatch({
+  //       //     type: 'INITIALIZE',
+  //       //     payload: {
+  //       //       isAuthenticated: false,
+  //       //       user: null,
+  //       //     },
+  //       //   });
+  //       // }
+  //     } catch (err) {
+  //       console.error(err);
+  //       dispatch({
+  //         type: 'INITIALIZE',
+  //         payload: {
+  //           isAuthenticated: false,
+  //           user: null,
+  //         },
+  //       });
+  //     }
+  //   };
 
-    initialize();
-  }, []);
+  //   initialize();
+  // }, []);
 
-  const login = async (email, password) => {
-    const response = await axios.post('/api/account/login', {
-      email,
-      password,
-    });
-    const { accessToken, user } = response.data;
+  const login = async (phone, password) => {
+    const response = await login({ phone, password });
+    const { access_token, user } = response.data;
 
-    setSession(accessToken);
+    setSession(access_token);
+
     dispatch({
       type: 'LOGIN',
       payload: {
@@ -124,23 +123,23 @@ function AuthProvider({ children }) {
     });
   };
 
-  const register = async (email, password, firstName, lastName) => {
-    const response = await axios.post('/api/account/register', {
-      email,
-      password,
-      firstName,
-      lastName,
-    });
-    const { accessToken, user } = response.data;
+  // const register = async (email, password, firstName, lastName) => {
+  //   const response = await axios.post('/api/account/register', {
+  //     email,
+  //     password,
+  //     firstName,
+  //     lastName,
+  //   });
+  //   const { accessToken, user } = response.data;
 
-    window.localStorage.setItem('accessToken', accessToken);
-    dispatch({
-      type: 'REGISTER',
-      payload: {
-        user,
-      },
-    });
-  };
+  //   window.localStorage.setItem('accessToken', accessToken);
+  //   dispatch({
+  //     type: 'REGISTER',
+  //     payload: {
+  //       user,
+  //     },
+  //   });
+  // };
 
   const logout = async () => {
     setSession(null);
@@ -154,7 +153,6 @@ function AuthProvider({ children }) {
         method: 'jwt',
         login,
         logout,
-        register,
       }}
     >
       {children}

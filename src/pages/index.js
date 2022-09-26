@@ -1,7 +1,6 @@
 import { useState } from 'react';
 
 // layouts
-import Layout from '../layouts';
 import Page from '../components/Page';
 // components
 import * as Yup from 'yup';
@@ -9,7 +8,7 @@ import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 // ----------------------------------------------------------------------
 // @mui
-import { Box, Card, Container, Stack, Typography, TextField } from '@mui/material';
+import { Box, Card, Container, Stack, Typography, TextField, MenuItem } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { DatePicker } from '@mui/x-date-pickers';
 import { TimePicker } from '@mui/x-date-pickers/TimePicker';
@@ -17,9 +16,9 @@ import { TimePicker } from '@mui/x-date-pickers/TimePicker';
 import { FormProvider, RHFTextField, RHFSelect } from '../components/hook-form';
 import { LoadingButton } from '@mui/lab';
 
-Appoinment.getLayout = function getLayout(page) {
-  return <Layout>{page}</Layout>;
-};
+// Appoinment.getLayout = function getLayout(page) {
+//   return <Layout>{page}</Layout>;
+// };
 
 const FullWidthInput = styled(Box)({
   flex: 1,
@@ -31,7 +30,7 @@ const FullWidthInput = styled(Box)({
 export default function Appoinment() {
   const [date, setDate] = useState(null);
 
-  const defaultValue = {
+  const defaultValues = {
     name: 'Chiến',
     email: 'tranthechien2012@gmail.com',
     user_id: 1,
@@ -43,11 +42,12 @@ export default function Appoinment() {
   const appoimentSchema = Yup.object().shape({
     name: Yup.string().required('Hãy nhập vào tên của bạn'),
     email: Yup.string().email('Hãy nhập đúng định dạng email').required('Hãy nhập vào email'),
+    phonenumber: Yup.string().required('Nhập vào số điện thoại của bạn'),
   });
 
   const methods = useForm({
     resolver: yupResolver(appoimentSchema),
-    defaultValue,
+    defaultValues,
   });
 
   const {
@@ -69,7 +69,7 @@ export default function Appoinment() {
   ];
 
   return (
-    <Page title="Appoinment form">
+    <Page title="Appoinment form" sx={{ pt: 4 }}>
       <Container maxWidth="lg">
         <Typography variant="h4" gutterBottom>
           Tạo cuộc gặp mặt mới
@@ -88,9 +88,9 @@ export default function Appoinment() {
 
               <RHFSelect label="Người cần gặp" name="user_id">
                 {users.map((user) => (
-                  <option key={user.user_id} value={user.user_id}>
+                  <MenuItem key={user.user_id} value={user.user_id}>
                     {user.name}
-                  </option>
+                  </MenuItem>
                 ))}
               </RHFSelect>
 
@@ -122,9 +122,11 @@ export default function Appoinment() {
               </Stack>
             </Stack>
 
-            <LoadingButton loading={isSubmitting} size="large" type="submit" variant="contained">
-              Lưu
-            </LoadingButton>
+            <Stack direction="row">
+              <LoadingButton loading={isSubmitting} size="large" type="submit" variant="contained" sx={{ marginLeft: 'auto' }}>
+                Tạo mới
+              </LoadingButton>
+            </Stack>
           </FormProvider>
         </Card>
       </Container>

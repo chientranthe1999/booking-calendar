@@ -35,10 +35,6 @@ export default function UserTableRow({ row, selected, onEditRow, onSelectRow, on
 
   return (
     <TableRow hover selected={selected}>
-      {/* <TableCell padding="checkbox">
-        <Checkbox checked={selected} onClick={onSelectRow} />
-      </TableCell> */}
-
       <TableCell sx={{ display: 'flex', alignItems: 'center' }}>
         <Avatar alt={name} src={avatarUrl} sx={{ mr: 2 }} />
         <Typography variant="subtitle2" noWrap>

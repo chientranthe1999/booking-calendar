@@ -1,12 +1,12 @@
-import axios from 'axios'
+import axios from 'axios';
 
 // ----------------------------------------------------------------------
 
-const axiosInstance = axios.create({ baseURL: process.env.BASE_API_URL || '', responseType: 'json' })
+const axiosInstance = axios.create({ baseURL: 'http://localhost:9000', responseType: 'json' });
 
 axiosInstance.interceptors.response.use(
-  (response) => response,
+  (response) => response.data,
   (error) => Promise.reject((error.response && error.response.data) || 'Something went wrong')
-)
+);
 
-export default axiosInstance
+export default axiosInstance;

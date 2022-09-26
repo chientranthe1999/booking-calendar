@@ -3,7 +3,6 @@ import { styled } from '@mui/material/styles';
 import { Box, Card, Stack, Container, Typography } from '@mui/material';
 
 // hooks
-import useAuth from '../hooks/useAuth';
 import useResponsive from '../hooks/useResponsive';
 // guards
 import GuestGuard from '../guards/GuestGuard';
