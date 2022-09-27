@@ -19,15 +19,7 @@ export default function RHFSelect({ name, children, ...other }) {
       name={name}
       control={control}
       render={({ field, fieldState: { error } }) => (
-        <TextField
-          {...field}
-          select
-          fullWidth
-          // SelectProps={{ native: true }}
-          error={!!error}
-          helperText={error?.message}
-          {...other}
-        >
+        <TextField {...field} select fullWidth error={!!error} helperText={error?.message} {...other}>
           {children}
         </TextField>
       )}
