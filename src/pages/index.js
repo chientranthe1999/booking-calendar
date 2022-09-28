@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 // layouts
 import Page from '../components/Page';
 // components
@@ -18,18 +19,19 @@ import { format } from 'date-fns';
 import { useSnackbar } from 'notistack';
 // ----------------------------------------------------------------------
 import { createAppointment } from '../apis/appointment';
+import { getTypeUser } from '../apis/user';
 
 export default function Appoinment() {
   // default value
   const defaultValues = {
-    user_name: 'Chiến',
-    user_email: 'tranthechien2012@gmail.com',
+    user_name: '',
+    user_email: '',
     user_id: '',
-    user_ccid: '123456',
-    user_phone: '0868547591',
-    time: new Date('2022-08-16 16:30'),
-    date: '2022-08-16',
-    description: 'ChienTT',
+    user_ccid: '',
+    user_phone: '',
+    date: format(new Date(Date.now()), 'yyyy-MM-dd'),
+    time: new Date(Date.now()),
+    description: '',
   };
 
   const { enqueueSnackbar } = useSnackbar();
@@ -51,27 +53,32 @@ export default function Appoinment() {
 
   const {
     handleSubmit,
+    reset,
     formState: { isSubmitting },
   } = methods;
 
   const onSubmit = async (data) => {
     try {
       data.time = format(new Date(data.time), 'HH:mm');
+      data.date = format(new Date(data.date), 'yyyy-MM-dd');
       await createAppointment(data);
       enqueueSnackbar('Tạo cuộc gặp mặt mới thành công', { autoHideDuration: 2000 });
+      reset();
     } catch (err) {
       console.log(err);
     }
   };
 
-  const users = [
-    { name: 'Chien', user_id: 1 },
-    { name: 'Chien2', user_id: 2 },
-    { name: 'Chien3', user_id: 3 },
-    { name: 'Chien4', user_id: 4 },
-    { name: 'Chien5', user_id: 5 },
-    { name: 'Chien6', user_id: 6 },
-  ];
+  useEffect(() => {
+    const getUsers = async () => {
+      const { data } = await getTypeUser();
+      setUsers(data);
+    };
+
+    getUsers();
+  }, []);
+
+  const [users, setUsers] = useState([]);
 
   return (
     <Page title="Appoinment form" sx={{ pt: 4 }}>
@@ -97,7 +104,7 @@ export default function Appoinment() {
 
               <RHFSelect label="Người cần gặp" name="user_id">
                 {users.map((user) => (
-                  <MenuItem key={user.user_id} value={user.user_id}>
+                  <MenuItem key={user.id} value={user.id}>
                     {user.name}
                   </MenuItem>
                 ))}

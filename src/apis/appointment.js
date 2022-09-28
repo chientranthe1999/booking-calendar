@@ -4,7 +4,7 @@ export const getAppointments = () => request.get('/appoinments');
 
 export const createAppointment = (data) => request.post('/appoinments', data);
 
-export const searchAppointment = (keyword) => request.get('/appoinments/', { params: { keyword } });
+export const searchAppointment = (keyword) => request.get('/appoinments/search', { params: { keyword } });
 
 export const acceptAppointment = (id, data) => request.put('/appoinments/accept/' + id, data);
 

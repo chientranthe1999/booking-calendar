@@ -3,12 +3,12 @@ import { useState } from 'react';
 // layouts
 import Layout from '../../layouts';
 import Page from '../../components/Page';
-import { FormProvider, RHFTextField, RHFCalendar, RHFTimePicker } from '../../components/hook-form';
+import { FormProvider, RHFCalendar, RHFTimePicker } from '../../components/hook-form';
 // ----------------------------------------------------------------------
 import Scrollbar from '../../components/Scrollbar';
 
 // @mui
-import { Box, Card, Container, TableHead, Typography, TableContainer, TableRow, TableBody, TableCell, Table, Stack } from '@mui/material';
+import { Box, Card, Container, TableHead, Typography, TableContainer, TableRow, TableBody, TableCell, Table, Stack, TextField } from '@mui/material';
 import Label from '../../components/Label';
 
 import DialogAnimate from '../../components/animate/DialogAnimate';
@@ -17,8 +17,9 @@ import { LoadingButton } from '@mui/lab';
 // ----------------------------------------------------------------------
 import { useTheme } from '@mui/material/styles';
 import { useForm } from 'react-hook-form';
-import { getAppointments, finishAppointment, cancelAppointment, acceptAppointment } from '../../apis/appointment';
+import { getAppointments, finishAppointment, cancelAppointment, acceptAppointment, searchAppointment } from '../../apis/appointment';
 
+import { format } from 'date-fns';
 
 Appoinment.getLayout = function getLayout(page) {
   return <Layout>{page}</Layout>;
@@ -53,7 +54,7 @@ export default function Appoinment({ appoinments }) {
 
   let defaultValues = {
     accepted_date: '',
-    accepted_time: ''
+    accepted_time: '',
   };
 
   const methods = useForm({
@@ -62,6 +63,7 @@ export default function Appoinment({ appoinments }) {
 
   const {
     handleSubmit,
+    setValue,
     formState: { errors, isSubmitting },
   } = methods;
 
@@ -97,22 +99,37 @@ export default function Appoinment({ appoinments }) {
     }
   };
 
-  const onSubmit = () => {};
+  const onSubmit = async (data) => {
+    data.accepted_time = format(new Date(data.accepted_time), 'HH:mm');
+    await acceptAppointment(currentId, data);
+
+    setIsFormOpen(false);
+    await updateData();
+  };
 
   const [tableData, setAppointment] = useState(appoinments);
-  const [isFormOpen, setIsFormOpen] = useState(false)
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [currentId, setCurrentId] = useState('');
+  const [ccid, setCcid] = useState(undefined);
 
   const updateData = async () => {
     const { data } = await getAppointments();
     setAppointment(data);
   };
 
-  const openForm = (data) => {
-    setIsFormOpen(true)
-    defaultValues = {
-      date: '2022-08-28'
+  const search = async () => {
+    const { data, count } = await searchAppointment(ccid);
+    if (count) {
+      setAppointment(data);
     }
-  }
+  };
+
+  const openForm = (data) => {
+    setIsFormOpen(true);
+    setCurrentId(data.id);
+    setValue('accepted_date', format(new Date(data.date), 'yyyy-MM-dd'));
+    setValue('accepted_time', new Date(`${data.date} ${data.time}`));
+  };
 
   return (
     <Page title="Appoinment List">
@@ -121,7 +138,6 @@ export default function Appoinment({ appoinments }) {
           Danh sách cuộc họp
         </Typography>
 
-
         <DialogAnimate open={isFormOpen}>
           <Box sx={{ p: 3 }}>
             <Typography variant="h4" sx={{ pb: 3 }}>
@@ -129,33 +145,51 @@ export default function Appoinment({ appoinments }) {
             </Typography>
 
             <FormProvider methods={methods} onSubmit={handleSubmit(onSubmit)}>
-            <Stack direction="row" spacing={2} mb={3}>
-                <RHFCalendar name="date" />
-                <RHFTimePicker name="time" />
+              <Stack direction="row" spacing={2} mb={3}>
+                <RHFCalendar name="accepted_date" />
+                <RHFTimePicker name="accepted_time" />
+              </Stack>
+              <Stack direction="row" spacing={1} sx={{ justifyContent: 'end' }}>
+                <LoadingButton
+                  loading={false}
+                  size="medium"
+                  type="submit"
+                  variant="contained"
+                  sx={{ backgroundColor: theme.palette.warning.dark }}
+                  onClick={() => setIsFormOpen(false)}
+                >
+                  Hủy
+                </LoadingButton>
+                <LoadingButton loading={false} size="medium" type="submit" variant="contained">
+                  Chấp nhận
+                </LoadingButton>
               </Stack>
             </FormProvider>
-            <Stack direction="row" spacing={1} sx={{ justifyContent: 'end' }}>
-              <LoadingButton loading={false} size="medium" type="submit" variant="contained" sx={{ backgroundColor: theme.palette.warning.dark }} onClick={() => setIsFormOpen(false)}>
-                Hủy
-              </LoadingButton>
-              <LoadingButton loading={false} size="medium" type="submit" variant="contained">
-                Chấp nhận
-              </LoadingButton>
-            </Stack>
           </Box>
         </DialogAnimate>
 
         {/* search form */}
-        {/* <Card sx={{ py: 2 }}> */}
-        <FormProvider methods={methods} onSubmit={handleSubmit(onSubmit)}>
-          <Stack spacing={3} mb={2} direction="row">
-            <RHFTextField label="Số điện thoại" name="phonenumber" sx={{ width: '40%' }} />
-            <LoadingButton loading={false} size="large" type="submit" variant="contained" sx={{ marginLeft: 'auto', width: '120px', height: '56px' }}>
-              Tìm kiếm
-            </LoadingButton>
-          </Stack>
-        </FormProvider>
-        {/* </Card> */}
+
+        <Stack spacing={3} mb={2} direction="row">
+          <TextField
+            id="outlined-basic"
+            variant="outlined"
+            label="Ccid"
+            defaultValue={ccid}
+            onChange={(e) => setCcid(e.target.value)}
+            sx={{ width: '40%' }}
+          />
+          <LoadingButton
+            loading={false}
+            size="large"
+            type="submit"
+            variant="contained"
+            sx={{ marginLeft: 'auto', width: '120px', height: '56px' }}
+            onClick={() => search()}
+          >
+            Tìm kiếm
+          </LoadingButton>
+        </Stack>
 
         <Card>
           <Scrollbar>
@@ -179,12 +213,12 @@ export default function Appoinment({ appoinments }) {
                       <TableCell align="center">{row.user_name}</TableCell>
                       <TableCell align="center">{row.user_email}</TableCell>
                       <TableCell align="center">{row.user_phone}</TableCell>
-                      <TableCell align="center">{`${row.accepted_time} ${row.date}`} </TableCell>
+                      <TableCell align="center">{`${row.accepted_time} ${row.accepted_date}`} </TableCell>
                       <TableCell align="center">{row.user_ccid}</TableCell>
                       <TableCell align="center">{row.description}</TableCell>
                       <TableCell align="center">{getLabelInfor(row.status)}</TableCell>
                       <TableCell align="right">
-                        <ActionButton status={row.status} id={row.id} updateData={() => updateData()} openForm={ () => openForm(row)} />
+                        <ActionButton status={row.status} id={row.id} updateData={() => updateData()} openForm={() => openForm(row)} />
                       </TableCell>
                     </TableRow>
                   ))}
@@ -203,15 +237,11 @@ const ActionButton = ({ status, id, updateData, openForm }) => {
 
   const theme = useTheme();
 
-  const handleAcceptAppointment = async () =>  {
-    openForm()
-  }
-
   const handleAppointmentAction = async (id, flag) => {
     try {
       switch (flag) {
         case APPOINMENT_STATUS.ACCEPTED:
-          await handleAcceptAppointment(id, { accepted_time: '12:00' });
+          openForm();
           break;
         case APPOINMENT_STATUS.CANCEL:
           await cancelAppointment(id);
