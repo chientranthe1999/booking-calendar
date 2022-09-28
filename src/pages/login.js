@@ -83,7 +83,7 @@ export default function Login() {
             <ContentStyle>
               <Stack direction="row" alignItems="center" sx={{ mb: 5 }}>
                 <Box sx={{ flexGrow: 1 }}>
-                  <Typography variant="h4">Sign in to Booking Calendar</Typography>
+                  <Typography variant="h4">Đăng nhập hệ thống quản lý cuộc họp</Typography>
                 </Box>
 
                 <Image disabledEffect alt="jwt" src="/image/ic_jwt.png" sx={{ width: 32, height: 32 }} />

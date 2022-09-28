@@ -11,13 +11,8 @@ export default function MyAvatar({ ...other }) {
   const { user } = useAuth();
 
   return (
-    <Avatar
-      src={user?.photoURL}
-      alt={user?.displayName}
-      color={user?.photoURL ? 'default' : createAvatar(user?.displayName).color}
-      {...other}
-    >
-      {createAvatar(user?.displayName).name}
+    <Avatar src={user?.photoURL} alt={user?.name} color={user?.photoURL ? 'default' : createAvatar(user?.name).color} {...other}>
+      {createAvatar(user?.name).name}
     </Avatar>
   );
 }
