@@ -1,36 +1,46 @@
 // layouts
 import Page from '../components/Page';
 // components
-import * as Yup from 'yup';
-import { useForm } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers/yup';
-// ----------------------------------------------------------------------
 // @mui
 import { Card, Container, Stack, Typography, MenuItem } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
 
 // ----------------------------------------------------------------------
+// hook form
+import * as Yup from 'yup';
+import { useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
 import { FormProvider, RHFTextField, RHFSelect, RHFCalendar, RHFTimePicker } from '../components/hook-form';
 
+// ----------------------------------------------------------------------
+import { format } from 'date-fns';
+// @noti
+import { useSnackbar } from 'notistack';
+// ----------------------------------------------------------------------
+import { createAppointment } from '../apis/appointment';
+
 export default function Appoinment() {
+  // default value
   const defaultValues = {
-    name: 'Chiến',
-    email: 'tranthechien2012@gmail.com',
+    user_name: 'Chiến',
+    user_email: 'tranthechien2012@gmail.com',
     user_id: '',
-    ccid: '123456',
-    phonenumber: '0868547591',
-    time: '16:30',
+    user_ccid: '123456',
+    user_phone: '0868547591',
+    time: new Date('2022-08-16 16:30'),
     date: '2022-08-16',
-    address: 'ChienTT',
+    description: 'ChienTT',
   };
 
+  const { enqueueSnackbar } = useSnackbar();
+
   const appoimentSchema = Yup.object().shape({
-    name: Yup.string().required('Hãy nhập vào tên của bạn'),
-    email: Yup.string().email('Hãy nhập đúng định dạng email').required('Hãy nhập vào email'),
-    phonenumber: Yup.string().required('Nhập vào số điện thoại của bạn'),
+    user_name: Yup.string().required('Hãy nhập vào tên của bạn'),
+    user_email: Yup.string().email('Hãy nhập đúng định dạng email').required('Hãy nhập vào email'),
+    user_phone: Yup.string().required('Nhập vào số điện thoại của bạn'),
     date: Yup.string().required('Nhập vào ngày hẹn'),
     time: Yup.string().required('Nhập vào số thời gian hẹn'),
-    ccid: Yup.string().required('Nhập vào số ccid của bạn'),
+    user_ccid: Yup.string().required('Nhập vào số ccid của bạn'),
     user_id: Yup.string().required('Hãy chọn người cần gặp'),
   });
 
@@ -44,8 +54,14 @@ export default function Appoinment() {
     formState: { isSubmitting },
   } = methods;
 
-  const onSubmit = (e) => {
-    console.log(e);
+  const onSubmit = async (data) => {
+    try {
+      data.time = format(new Date(data.time), 'HH:mm');
+      await createAppointment(data);
+      enqueueSnackbar('Tạo cuộc gặp mặt mới thành công', { autoHideDuration: 2000 });
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   const users = [
@@ -68,16 +84,16 @@ export default function Appoinment() {
           <FormProvider methods={methods} onSubmit={handleSubmit(onSubmit)}>
             <Stack spacing={3} mb={2}>
               {/* name */}
-              <RHFTextField label="Tên của bạn" name="name" />
+              <RHFTextField label="Tên của bạn" name="user_name" />
 
               {/* email, phonenumber */}
               <Stack direction="row" spacing={2}>
-                <RHFTextField label="Email" name="email" />
-                <RHFTextField label="Số điện thoại" name="phonenumber" />
+                <RHFTextField label="Email" name="user_email" />
+                <RHFTextField label="Số điện thoại" name="user_phone" />
               </Stack>
-              <RHFTextField label="Địa chỉ" name="address" />
 
-              <RHFTextField label="Số CCID" name="ccid" />
+              <RHFTextField label="Số CCID" name="user_ccid" />
+              <RHFTextField label="Mô tả" name="description" />
 
               <RHFSelect label="Người cần gặp" name="user_id">
                 {users.map((user) => (

@@ -1,34 +1,35 @@
 import * as Yup from 'yup';
 import { useState } from 'react';
+import { useRouter } from 'next/router';
 // next
 import NextLink from 'next/link';
 // form
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 // @mui
-import { Link, Stack, Alert, IconButton, InputAdornment } from '@mui/material';
+import { Link, Stack, IconButton, InputAdornment } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
 // routes
 import { PATH_AUTH } from '../../../routes/paths';
 // hooks
 import useAuth from '../../../hooks/useAuth';
-import useIsMountedRef from '../../../hooks/useIsMountedRef';
 // components
 import Iconify from '../../../components/Iconify';
 import { FormProvider, RHFTextField } from '../../../components/hook-form';
 
 // ----------------------------------------------------------------------
+import { useSnackbar } from 'notistack';
 
 export default function LoginForm() {
-  const { login } = useAuth();
+  const router = useRouter();
 
-  const isMountedRef = useIsMountedRef();
+  const { login } = useAuth();
 
   const [showPassword, setShowPassword] = useState(false);
 
   const LoginSchema = Yup.object().shape({
-    phone: Yup.string().required('Phone number is required'),
-    password: Yup.string().required('Password is required'),
+    phone: Yup.string().required('Số điện thoại là bắt buộc'),
+    password: Yup.string().required('Password is required').min(8, 'Mật khẩu phải có ít nhất 8 kí tự'),
   });
 
   const defaultValues = {
@@ -42,29 +43,25 @@ export default function LoginForm() {
   });
 
   const {
-    reset,
-    setError,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { isSubmitting },
   } = methods;
+
+  const { enqueueSnackbar } = useSnackbar();
 
   const onSubmit = async (data) => {
     try {
       await login(data.phone, data.password);
+      enqueueSnackbar('Đăng nhập thành công', { autoHideDuration: 3000 });
+      router.push('/user/list');
     } catch (error) {
-      console.log(error);
-      reset();
-      if (isMountedRef.current) {
-        setError('afterSubmit', { ...error, message: error.message });
-      }
+      enqueueSnackbar('Tài khoản, mật khẩu không chính xác', { autoHideDuration: 3000, variant: 'error' });
     }
   };
 
   return (
     <FormProvider methods={methods} onSubmit={handleSubmit(onSubmit)}>
       <Stack spacing={3}>
-        {/* {!!errors.afterSubmit && <Alert severity="error">{errors.afterSubmit.message}</Alert>} */}
-
         <RHFTextField name="phone" label="Số điện thoại" />
 
         <RHFTextField

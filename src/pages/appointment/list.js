@@ -1,23 +1,24 @@
 import { useState } from 'react';
 
 // layouts
-import Layout from '../layouts';
-import Page from '../components/Page';
-import { FormProvider, RHFTextField } from '../components/hook-form';
+import Layout from '../../layouts';
+import Page from '../../components/Page';
+import { FormProvider, RHFTextField, RHFCalendar, RHFTimePicker } from '../../components/hook-form';
 // ----------------------------------------------------------------------
-import Scrollbar from '../components/Scrollbar';
+import Scrollbar from '../../components/Scrollbar';
 
 // @mui
 import { Box, Card, Container, TableHead, Typography, TableContainer, TableRow, TableBody, TableCell, Table, Stack } from '@mui/material';
-import Label from '../components/Label';
+import Label from '../../components/Label';
 
-import DialogAnimate from '../components/animate/DialogAnimate';
+import DialogAnimate from '../../components/animate/DialogAnimate';
 // ----------------------------------------------------------------------
 import { LoadingButton } from '@mui/lab';
 // ----------------------------------------------------------------------
 import { useTheme } from '@mui/material/styles';
 import { useForm } from 'react-hook-form';
-import { getAppointments, finishAppointment, cancelAppointment, acceptAppointment } from '../apis/appointment';
+import { getAppointments, finishAppointment, cancelAppointment, acceptAppointment } from '../../apis/appointment';
+
 
 Appoinment.getLayout = function getLayout(page) {
   return <Layout>{page}</Layout>;
@@ -50,13 +51,19 @@ export default function Appoinment({ appoinments }) {
     { id: 7, label: '' },
   ];
 
-  const defaultValues = {
-    phonenumber: '',
+  let defaultValues = {
+    accepted_date: '',
+    accepted_time: ''
   };
 
   const methods = useForm({
     defaultValues,
   });
+
+  const {
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = methods;
 
   const theme = useTheme();
 
@@ -90,21 +97,22 @@ export default function Appoinment({ appoinments }) {
     }
   };
 
-  const {
-    reset,
-    setError,
-    handleSubmit,
-    formState: { errors, isSubmitting },
-  } = methods;
-
   const onSubmit = () => {};
 
   const [tableData, setAppointment] = useState(appoinments);
+  const [isFormOpen, setIsFormOpen] = useState(false)
 
   const updateData = async () => {
     const { data } = await getAppointments();
     setAppointment(data);
   };
+
+  const openForm = (data) => {
+    setIsFormOpen(true)
+    defaultValues = {
+      date: '2022-08-28'
+    }
+  }
 
   return (
     <Page title="Appoinment List">
@@ -112,20 +120,22 @@ export default function Appoinment({ appoinments }) {
         <Typography variant="h3" gutterBottom>
           Danh sách cuộc họp
         </Typography>
-        <DialogAnimate open={false}>
+
+
+        <DialogAnimate open={isFormOpen}>
           <Box sx={{ p: 3 }}>
             <Typography variant="h4" sx={{ pb: 3 }}>
               Xác nhận thời gian gặp mặt
             </Typography>
 
             <FormProvider methods={methods} onSubmit={handleSubmit(onSubmit)}>
-              <Stack spacing={3} mb={3}>
-                <RHFTextField label="Time" name="phonenumber" />
-                <RHFTextField label="Ngày" name="phonenumber" />
+            <Stack direction="row" spacing={2} mb={3}>
+                <RHFCalendar name="date" />
+                <RHFTimePicker name="time" />
               </Stack>
             </FormProvider>
             <Stack direction="row" spacing={1} sx={{ justifyContent: 'end' }}>
-              <LoadingButton loading={false} size="medium" type="submit" variant="contained" sx={{ backgroundColor: theme.palette.warning.dark }}>
+              <LoadingButton loading={false} size="medium" type="submit" variant="contained" sx={{ backgroundColor: theme.palette.warning.dark }} onClick={() => setIsFormOpen(false)}>
                 Hủy
               </LoadingButton>
               <LoadingButton loading={false} size="medium" type="submit" variant="contained">
@@ -174,7 +184,7 @@ export default function Appoinment({ appoinments }) {
                       <TableCell align="center">{row.description}</TableCell>
                       <TableCell align="center">{getLabelInfor(row.status)}</TableCell>
                       <TableCell align="right">
-                        <ActionButton status={row.status} id={row.id} updateData={() => updateData()} />
+                        <ActionButton status={row.status} id={row.id} updateData={() => updateData()} openForm={ () => openForm(row)} />
                       </TableCell>
                     </TableRow>
                   ))}
@@ -188,16 +198,20 @@ export default function Appoinment({ appoinments }) {
   );
 }
 
-const ActionButton = ({ status, id, updateData }) => {
+const ActionButton = ({ status, id, updateData, openForm }) => {
   const isSubmitting = false;
 
   const theme = useTheme();
+
+  const handleAcceptAppointment = async () =>  {
+    openForm()
+  }
 
   const handleAppointmentAction = async (id, flag) => {
     try {
       switch (flag) {
         case APPOINMENT_STATUS.ACCEPTED:
-          await acceptAppointment(id, { accepted_time: '12:00' });
+          await handleAcceptAppointment(id, { accepted_time: '12:00' });
           break;
         case APPOINMENT_STATUS.CANCEL:
           await cancelAppointment(id);

@@ -32,7 +32,7 @@ export default function RHFSelect({ name, ...other }) {
           <TimePicker
             label="Chọn giờ"
             ampm={false}
-            inputFormat="hh:mm"
+            inputFormat="HH:mm"
             {...field}
             {...other}
             renderInput={(params) => <TextField fullWidth {...params} error={!!error} helperText={error?.message} />}

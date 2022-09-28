@@ -2,7 +2,9 @@ import axios from 'axios';
 
 // ----------------------------------------------------------------------
 
-const axiosInstance = axios.create({ baseURL: 'http://localhost:9000', responseType: 'json' });
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
+
+const axiosInstance = axios.create({ baseURL: BASE_URL, responseType: 'json' });
 
 axiosInstance.interceptors.response.use(
   (response) => response.data,
