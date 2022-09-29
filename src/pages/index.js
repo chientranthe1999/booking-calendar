@@ -1,48 +1,49 @@
-import { useState } from 'react';
-
+import { useEffect, useState } from 'react';
 // layouts
 import Page from '../components/Page';
 // components
+// @mui
+import { Card, Container, Stack, Typography, MenuItem } from '@mui/material';
+import { LoadingButton } from '@mui/lab';
+
+// ----------------------------------------------------------------------
+// hook form
 import * as Yup from 'yup';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-// ----------------------------------------------------------------------
-// @mui
-import { Box, Card, Container, Stack, Typography, TextField, MenuItem } from '@mui/material';
-import { styled } from '@mui/material/styles';
-import { DatePicker } from '@mui/x-date-pickers';
-import { TimePicker } from '@mui/x-date-pickers/TimePicker';
-// ----------------------------------------------------------------------
-import { FormProvider, RHFTextField, RHFSelect } from '../components/hook-form';
-import { LoadingButton } from '@mui/lab';
+import { FormProvider, RHFTextField, RHFSelect, RHFCalendar, RHFTimePicker } from '../components/hook-form';
 
-// Appoinment.getLayout = function getLayout(page) {
-//   return <Layout>{page}</Layout>;
-// };
-
-const FullWidthInput = styled(Box)({
-  flex: 1,
-  '& .MuiTextField-root': {
-    width: '100%',
-  },
-});
+// ----------------------------------------------------------------------
+import { format } from 'date-fns';
+// @noti
+import { useSnackbar } from 'notistack';
+// ----------------------------------------------------------------------
+import { createAppointment } from '../apis/appointment';
+import { getTypeUser } from '../apis/user';
 
 export default function Appoinment() {
-  const [date, setDate] = useState(null);
-
+  // default value
   const defaultValues = {
-    name: 'Chiến',
-    email: 'tranthechien2012@gmail.com',
-    user_id: 1,
-    phonenumber: '0868547591',
-    time: '16:30',
-    date: '2022-16-08',
+    user_name: '',
+    user_email: '',
+    user_id: '',
+    user_ccid: '',
+    user_phone: '',
+    date: format(new Date(Date.now()), 'yyyy-MM-dd'),
+    time: new Date(Date.now()),
+    description: '',
   };
 
+  const { enqueueSnackbar } = useSnackbar();
+
   const appoimentSchema = Yup.object().shape({
-    name: Yup.string().required('Hãy nhập vào tên của bạn'),
-    email: Yup.string().email('Hãy nhập đúng định dạng email').required('Hãy nhập vào email'),
-    phonenumber: Yup.string().required('Nhập vào số điện thoại của bạn'),
+    user_name: Yup.string().required('Hãy nhập vào tên của bạn'),
+    user_email: Yup.string().email('Hãy nhập đúng định dạng email').required('Hãy nhập vào email'),
+    user_phone: Yup.string().required('Nhập vào số điện thoại của bạn'),
+    date: Yup.string().required('Nhập vào ngày hẹn'),
+    time: Yup.string().required('Nhập vào số thời gian hẹn'),
+    user_ccid: Yup.string().required('Nhập vào số ccid của bạn'),
+    user_id: Yup.string().required('Hãy chọn người cần gặp'),
   });
 
   const methods = useForm({
@@ -51,22 +52,33 @@ export default function Appoinment() {
   });
 
   const {
-    reset,
-    setError,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    reset,
+    formState: { isSubmitting },
   } = methods;
 
-  const onSubmit = () => {};
+  const onSubmit = async (data) => {
+    try {
+      data.time = format(new Date(data.time), 'HH:mm');
+      data.date = format(new Date(data.date), 'yyyy-MM-dd');
+      await createAppointment(data);
+      enqueueSnackbar('Tạo cuộc gặp mặt mới thành công', { autoHideDuration: 3000 });
+      reset();
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
-  const users = [
-    { name: 'Chien', user_id: 1 },
-    { name: 'Chien2', user_id: 2 },
-    { name: 'Chien3', user_id: 3 },
-    { name: 'Chien4', user_id: 4 },
-    { name: 'Chien5', user_id: 5 },
-    { name: 'Chien6', user_id: 6 },
-  ];
+  useEffect(() => {
+    const getUsers = async () => {
+      const data = await getTypeUser();
+      setUsers(data);
+    };
+
+    getUsers();
+  }, []);
+
+  const [users, setUsers] = useState([]);
 
   return (
     <Page title="Appoinment form" sx={{ pt: 4 }}>
@@ -78,50 +90,33 @@ export default function Appoinment() {
         <Card sx={{ p: 2 }}>
           <FormProvider methods={methods} onSubmit={handleSubmit(onSubmit)}>
             <Stack spacing={3} mb={2}>
-              <RHFTextField label="Tên của bạn" name="name" />
-              {/* Stack =  div + css (display: flex); */}
+              {/* name */}
+              <RHFTextField label="Tên của bạn" name="user_name" />
+
+              {/* email, phonenumber */}
               <Stack direction="row" spacing={2}>
-                <RHFTextField label="Email" name="email" />
-                <RHFTextField label="Số điện thoại" name="phonenumber" />
+                <RHFTextField label="Email" name="user_email" />
+                <RHFTextField label="Số điện thoại" name="user_phone" />
               </Stack>
-              <RHFTextField label="Địa chỉ" name="address" />
+
+              <RHFTextField label="Số CCID" name="user_ccid" />
+              <RHFTextField label="Mô tả" name="description" />
 
               <RHFSelect label="Người cần gặp" name="user_id">
                 {users.map((user) => (
-                  <MenuItem key={user.user_id} value={user.user_id}>
+                  <MenuItem key={user.id} value={user.id}>
                     {user.name}
                   </MenuItem>
                 ))}
               </RHFSelect>
 
               <Stack direction="row" spacing={2}>
-                <FullWidthInput>
-                  <DatePicker
-                    label="Chọn ngày"
-                    value={date}
-                    onChange={(newValue) => {
-                      setDate(newValue);
-                    }}
-                    renderInput={(params) => <TextField {...params} />}
-                  />
-                </FullWidthInput>
-                <FullWidthInput
-                  sx={{
-                    flex: 1,
-                  }}
-                >
-                  <TimePicker
-                    label="Chọn giờ"
-                    value={date}
-                    onChange={(newValue) => {
-                      setDate(newValue);
-                    }}
-                    renderInput={(params) => <TextField {...params} />}
-                  />
-                </FullWidthInput>
+                <RHFCalendar name="date" />
+                <RHFTimePicker name="time" />
               </Stack>
             </Stack>
 
+            {/* Loading button */}
             <Stack direction="row">
               <LoadingButton loading={isSubmitting} size="large" type="submit" variant="contained" sx={{ marginLeft: 'auto' }}>
                 Tạo mới

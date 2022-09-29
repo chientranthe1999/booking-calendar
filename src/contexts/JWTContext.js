@@ -1,9 +1,9 @@
 import { createContext, useEffect, useReducer } from 'react';
 import PropTypes from 'prop-types';
 // utils
-import { isValidToken, setSession } from '../utils/jwt';
+import { setSession } from '../utils/jwt';
 
-import { login } from '../apis/auth';
+import { loginApi, getInfo } from '../apis/auth';
 
 // ----------------------------------------------------------------------
 
@@ -32,20 +32,12 @@ const handlers = {
       user,
     };
   },
+
   LOGOUT: (state) => ({
     ...state,
     isAuthenticated: false,
     user: null,
   }),
-  REGISTER: (state, action) => {
-    const { user } = action.payload;
-
-    return {
-      ...state,
-      isAuthenticated: true,
-      user,
-    };
-  },
 };
 
 const reducer = (state, action) => (handlers[action.type] ? handlers[action.type](state, action) : state);
@@ -67,51 +59,50 @@ AuthProvider.propTypes = {
 function AuthProvider({ children }) {
   const [state, dispatch] = useReducer(reducer, initialState);
 
-  // useEffect(() => {
-  //   const initialize = async () => {
-  //     try {
-  //       const accessToken = window.localStorage.getItem('accessToken');
+  useEffect(() => {
+    const initialize = async () => {
+      try {
+        const accessToken = window.localStorage.getItem('accessToken');
 
-  //       // if (accessToken && isValidToken(accessToken)) {
-  //       //   setSession(accessToken);
+        if (accessToken) {
+          setSession(accessToken);
 
-  //       //   const response = await login();
-  //       //   const { user } = response.data;
+          const user = await getInfo();
 
-  //       //   dispatch({
-  //       //     type: 'INITIALIZE',
-  //       //     payload: {
-  //       //       isAuthenticated: true,
-  //       //       user,
-  //       //     },
-  //       //   });
-  //       // } else {
-  //       //   dispatch({
-  //       //     type: 'INITIALIZE',
-  //       //     payload: {
-  //       //       isAuthenticated: false,
-  //       //       user: null,
-  //       //     },
-  //       //   });
-  //       // }
-  //     } catch (err) {
-  //       console.error(err);
-  //       dispatch({
-  //         type: 'INITIALIZE',
-  //         payload: {
-  //           isAuthenticated: false,
-  //           user: null,
-  //         },
-  //       });
-  //     }
-  //   };
+          dispatch({
+            type: 'INITIALIZE',
+            payload: {
+              isAuthenticated: true,
+              user: user,
+            },
+          });
+        } else {
+          dispatch({
+            type: 'INITIALIZE',
+            payload: {
+              isAuthenticated: false,
+              user: null,
+            },
+          });
+        }
+      } catch (err) {
+        console.error(err);
+        dispatch({
+          type: 'INITIALIZE',
+          payload: {
+            isAuthenticated: false,
+            user: null,
+          },
+        });
+      }
+    };
 
-  //   initialize();
-  // }, []);
+    initialize();
+  }, []);
 
   const login = async (phone, password) => {
-    const response = await login({ phone, password });
-    const { access_token, user } = response.data;
+    const response = await loginApi({ phone, password });
+    const { access_token, user } = response;
 
     setSession(access_token);
 
@@ -121,25 +112,9 @@ function AuthProvider({ children }) {
         user,
       },
     });
+
+    return response;
   };
-
-  // const register = async (email, password, firstName, lastName) => {
-  //   const response = await axios.post('/api/account/register', {
-  //     email,
-  //     password,
-  //     firstName,
-  //     lastName,
-  //   });
-  //   const { accessToken, user } = response.data;
-
-  //   window.localStorage.setItem('accessToken', accessToken);
-  //   dispatch({
-  //     type: 'REGISTER',
-  //     payload: {
-  //       user,
-  //     },
-  //   });
-  // };
 
   const logout = async () => {
     setSession(null);

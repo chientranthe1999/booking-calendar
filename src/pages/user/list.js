@@ -1,25 +1,23 @@
-import { useState } from 'react';
-
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-// @mui
-import { Card, Container, TableHead, Typography, TableContainer, TableRow, TableBody, TableCell, Table, Alert } from '@mui/material';
-import { LoadingButton } from '@mui/lab';
-import Label from '../../components/Label';
-// import CheckCircleOutlineIcon from '@mui/icons-material';
 
-import { useTheme } from '@mui/material/styles';
-
-// routes
-// import { PATH_DASHBOARD } from '../../routes/paths';
 // hooks
+import useAuth from '../../hooks/useAuth';
+import { useTheme } from '@mui/material/styles';
 import useSettings from '../../hooks/useSettings';
-
+// api
 import { getUsers, activeUser, deActiveUser } from '../../apis/user';
 // layouts
-import Layout from '../../layouts';
 // components
+import Layout from '../../layouts';
 import Page from '../../components/Page';
 import Scrollbar from '../../components/Scrollbar';
+
+// @mui
+import { useSnackbar } from 'notistack';
+import { Card, Container, TableHead, Typography, TableContainer, TableRow, TableBody, TableCell, Table } from '@mui/material';
+import { LoadingButton } from '@mui/lab';
+import Label from '../../components/Label';
 
 // ----------------------------------------------------------------------
 const ROLE = {
@@ -39,14 +37,23 @@ UserList.getLayout = function getLayout(page) {
 };
 // ----------------------------------------------------------------------
 
-UserList.getInitialProps = async () => {
-  const users = await getUsers();
-  return {
-    users,
-  };
-};
+export default function UserList() {
+  const [tableData, setTableData] = useState([]);
+  const { user, isAuthenticated } = useAuth();
+  const router = useRouter();
 
-export default function UserList({ users }) {
+  useEffect(() => {
+    const getUsersData = async () => {
+      if (isAuthenticated && user?.role !== 1) {
+        return router.push('/appointment/list');
+      }
+      const { data } = await getUsers();
+      setTableData(data);
+    };
+
+    getUsersData();
+  }, []);
+
   const headLabel = [
     { id: 1, label: 'Họ và tên' },
     { id: 2, label: 'Email' },
@@ -57,41 +64,37 @@ export default function UserList({ users }) {
     { id: 7, label: '' },
   ];
 
+  const { enqueueSnackbar } = useSnackbar();
+
   const { themeStretch } = useSettings();
 
-  const { push } = useRouter();
-
   const theme = useTheme();
-
-  const [tableData, setTableData] = useState(users.data);
 
   const handleActiveUser = async (id) => {
     await activeUser(id);
     const { data } = await getUsers();
     setTableData(data);
+    enqueueSnackbar('Kích hoạt user thành công', { autoHideDuration: 3000 });
   };
 
   const handleDeactiveUser = async (id) => {
     await deActiveUser(id);
     const { data } = await getUsers();
-
     setTableData(data);
-    // return <Alert severity="success">This is a success alert — check it out!</Alert>;
+    enqueueSnackbar('Hủy kích hoạt user thành công', { autoHideDuration: 3000 });
   };
 
   return (
     <Page title="User: List">
       <Container maxWidth={themeStretch ? false : 'lg'}>
         <Typography gutterBottom variant="h3">
-          Quán lý user
+          Quản lý user
         </Typography>
 
         <Card>
           <Scrollbar>
             <TableContainer sx={{ minWidth: 800, position: 'relative', paddingTop: '8px' }}>
-              {/* table main content */}
               <Table size="medium">
-                {/* header */}
                 <TableHead>
                   <TableRow>
                     {headLabel.map((headCell) => (
@@ -164,8 +167,6 @@ export default function UserList({ users }) {
                       </TableCell>
                     </TableRow>
                   ))}
-
-                  {/* <TableNoData isNotFound={isNotFound} /> */}
                 </TableBody>
               </Table>
             </TableContainer>
