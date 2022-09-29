@@ -71,7 +71,7 @@ export default function Appoinment() {
 
   useEffect(() => {
     const getUsers = async () => {
-      const { data } = await getTypeUser();
+      const data = await getTypeUser();
       setUsers(data);
     };
 

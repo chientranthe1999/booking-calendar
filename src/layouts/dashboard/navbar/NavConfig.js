@@ -30,9 +30,10 @@ const navConfig = [
         title: 'user',
         path: '/user',
         icon: ICONS.user,
+        role: [1],
         children: [
           { title: 'User List', path: '/user/list' },
-          { title: 'User Add', path: "/user/add" },
+          { title: 'User Add', path: '/user/add' },
         ],
       },
 
@@ -41,10 +42,9 @@ const navConfig = [
         title: 'appointment',
         path: '/appointment',
         icon: ICONS.cart,
-        children: [
-          { title: 'Appointment List', path: '/appointment/list'},
-        ],
-      }
+        role: [2, 3],
+        children: [{ title: 'Appointment List', path: '/appointment/list' }],
+      },
     ],
   },
 ];
