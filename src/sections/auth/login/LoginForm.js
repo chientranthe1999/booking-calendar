@@ -1,5 +1,5 @@
 import * as Yup from 'yup';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 // next
 import NextLink from 'next/link';
@@ -22,8 +22,14 @@ import { useSnackbar } from 'notistack';
 
 export default function LoginForm() {
   const router = useRouter();
+  const { login, isAuthenticated, user } = useAuth();
 
-  const { login } = useAuth();
+  useEffect(() => {
+    if (isAuthenticated) {
+      if (user.role === 1) router.push('/user/list');
+      else router.push('/appointment/list');
+    }
+  });
 
   const [showPassword, setShowPassword] = useState(false);
 
@@ -51,14 +57,18 @@ export default function LoginForm() {
 
   const onSubmit = async (data) => {
     try {
-      await login(data.phone, data.password);
+      const res = await login(data.phone, data.password);
       enqueueSnackbar('Đăng nhập thành công', { autoHideDuration: 3000 });
-      router.push('/user/list');
+      if (res.user.role === 1) {
+        router.push('/user/list');
+      } else router.push('/appointment/list');
     } catch (error) {
       enqueueSnackbar('Tài khoản, mật khẩu không chính xác', { autoHideDuration: 3000, variant: 'error' });
     }
   };
 
+  if (isAuthenticated) return <></>
+  
   return (
     <FormProvider methods={methods} onSubmit={handleSubmit(onSubmit)}>
       <Stack spacing={3}>

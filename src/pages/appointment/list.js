@@ -93,8 +93,10 @@ export default function Appoinment() {
     const { data, count } = await searchAppointment(ccid);
     if (!count) {
       setIsNotFound(true);
+      setAppointment([]);
     } else {
       setAppointment(data);
+      setIsNotFound(false);
     }
   };
 

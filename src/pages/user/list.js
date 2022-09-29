@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
 
 // hooks
+import useAuth from '../../hooks/useAuth';
 import { useTheme } from '@mui/material/styles';
 import useSettings from '../../hooks/useSettings';
 // api
@@ -13,7 +15,7 @@ import Scrollbar from '../../components/Scrollbar';
 
 // @mui
 import { useSnackbar } from 'notistack';
-import { Card, Container, TableHead, Typography, TableContainer, TableRow, TableBody, TableCell, Table, Alert } from '@mui/material';
+import { Card, Container, TableHead, Typography, TableContainer, TableRow, TableBody, TableCell, Table } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
 import Label from '../../components/Label';
 
@@ -37,9 +39,14 @@ UserList.getLayout = function getLayout(page) {
 
 export default function UserList() {
   const [tableData, setTableData] = useState([]);
+  const { user, isAuthenticated } = useAuth();
+  const router = useRouter();
 
   useEffect(() => {
     const getUsersData = async () => {
+      if (isAuthenticated && user?.role !== 1) {
+        return router.push('/appointment/list');
+      }
       const { data } = await getUsers();
       setTableData(data);
     };

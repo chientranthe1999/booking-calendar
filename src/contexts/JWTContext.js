@@ -32,7 +32,7 @@ const handlers = {
       user,
     };
   },
-  
+
   LOGOUT: (state) => ({
     ...state,
     isAuthenticated: false,
@@ -112,6 +112,8 @@ function AuthProvider({ children }) {
         user,
       },
     });
+
+    return response;
   };
 
   const logout = async () => {
