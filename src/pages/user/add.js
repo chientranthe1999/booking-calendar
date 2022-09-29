@@ -47,7 +47,9 @@ export default function UserList() {
   });
 
   // default value
-  const defaultValues = {};
+  const defaultValues = {
+    role: '',
+  };
 
   const methods = useForm({
     resolver: yupResolver(userCreateSchema),
@@ -63,11 +65,11 @@ export default function UserList() {
   const onSubmit = async (data) => {
     try {
       await createUser(data);
-      enqueueSnackbar('Tạo user mới thành công', { autoHideDuration: 2000 });
+      enqueueSnackbar('Tạo user mới thành công', { autoHideDuration: 3000 });
       reset();
       router.push('/user/list');
     } catch (err) {
-      console.log(err);
+      enqueueSnackbar('Đã có lỗi xảy ra. Vui lòng thử lại sau', { autoHideDuration: 3000, variant: 'error' });
     }
   };
 

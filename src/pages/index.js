@@ -62,7 +62,7 @@ export default function Appoinment() {
       data.time = format(new Date(data.time), 'HH:mm');
       data.date = format(new Date(data.date), 'yyyy-MM-dd');
       await createAppointment(data);
-      enqueueSnackbar('Tạo cuộc gặp mặt mới thành công', { autoHideDuration: 2000 });
+      enqueueSnackbar('Tạo cuộc gặp mặt mới thành công', { autoHideDuration: 3000 });
       reset();
     } catch (err) {
       console.log(err);

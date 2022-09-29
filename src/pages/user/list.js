@@ -1,22 +1,21 @@
 import { useState, useEffect } from 'react';
 
-import { useSnackbar } from 'notistack';
+// hooks
+import { useTheme } from '@mui/material/styles';
+import useSettings from '../../hooks/useSettings';
+// api
+import { getUsers, activeUser, deActiveUser } from '../../apis/user';
+// layouts
+// components
+import Layout from '../../layouts';
+import Page from '../../components/Page';
+import Scrollbar from '../../components/Scrollbar';
+
 // @mui
+import { useSnackbar } from 'notistack';
 import { Card, Container, TableHead, Typography, TableContainer, TableRow, TableBody, TableCell, Table, Alert } from '@mui/material';
 import { LoadingButton } from '@mui/lab';
 import Label from '../../components/Label';
-
-import { useTheme } from '@mui/material/styles';
-
-// hooks
-import useSettings from '../../hooks/useSettings';
-
-import { getUsers, activeUser, deActiveUser } from '../../apis/user';
-// layouts
-import Layout from '../../layouts';
-// components
-import Page from '../../components/Page';
-import Scrollbar from '../../components/Scrollbar';
 
 // ----------------------------------------------------------------------
 const ROLE = {
@@ -41,7 +40,7 @@ export default function UserList() {
 
   useEffect(() => {
     const getUsersData = async () => {
-      const {data} = await getUsers();
+      const { data } = await getUsers();
       setTableData(data);
     };
 
@@ -63,8 +62,6 @@ export default function UserList() {
   const { themeStretch } = useSettings();
 
   const theme = useTheme();
-
-
 
   const handleActiveUser = async (id) => {
     await activeUser(id);
@@ -90,9 +87,7 @@ export default function UserList() {
         <Card>
           <Scrollbar>
             <TableContainer sx={{ minWidth: 800, position: 'relative', paddingTop: '8px' }}>
-              {/* table main content */}
               <Table size="medium">
-                {/* header */}
                 <TableHead>
                   <TableRow>
                     {headLabel.map((headCell) => (
@@ -165,8 +160,6 @@ export default function UserList() {
                       </TableCell>
                     </TableRow>
                   ))}
-
-                  {/* <TableNoData isNotFound={isNotFound} /> */}
                 </TableBody>
               </Table>
             </TableContainer>

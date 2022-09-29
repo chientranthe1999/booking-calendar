@@ -1,11 +1,12 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
-// layouts
+// components
 import Layout from '../../layouts';
 import Page from '../../components/Page';
 import { FormProvider, RHFCalendar, RHFTimePicker } from '../../components/hook-form';
-// ----------------------------------------------------------------------
 import Scrollbar from '../../components/Scrollbar';
+import { TableNoData } from '../../components/table';
+// ----------------------------------------------------------------------
 
 // @mui
 import { Box, Card, Container, TableHead, Typography, TableContainer, TableRow, TableBody, TableCell, Table, Stack, TextField } from '@mui/material';
@@ -20,17 +21,10 @@ import { useForm } from 'react-hook-form';
 import { getAppointments, finishAppointment, cancelAppointment, acceptAppointment, searchAppointment } from '../../apis/appointment';
 
 import { format } from 'date-fns';
+import { PropTypes } from 'prop-types';
 
 Appoinment.getLayout = function getLayout(page) {
   return <Layout>{page}</Layout>;
-};
-
-Appoinment.getInitialProps = async () => {
-  const { data } = await getAppointments();
-
-  return {
-    appoinments: data,
-  };
 };
 
 const APPOINMENT_STATUS = {
@@ -40,7 +34,18 @@ const APPOINMENT_STATUS = {
   DONE: 4,
 };
 
-export default function Appoinment({ appoinments }) {
+export default function Appoinment() {
+  const [tableData, setAppointment] = useState([]);
+
+  useEffect(() => {
+    const getApppointmentData = async () => {
+      const { data, count } = await getAppointments();
+      setAppointment(data);
+      if (!count) setIsNotFound(true);
+    };
+    getApppointmentData();
+  }, []);
+
   const headLabel = [
     { id: 1, label: 'Họ và tên' },
     { id: 2, label: 'Email' },
@@ -52,6 +57,8 @@ export default function Appoinment({ appoinments }) {
     { id: 7, label: '' },
   ];
 
+  // form handle
+
   let defaultValues = {
     accepted_date: '',
     accepted_time: '',
@@ -61,14 +68,44 @@ export default function Appoinment({ appoinments }) {
     defaultValues,
   });
 
-  const {
-    handleSubmit,
-    setValue,
-    formState: { errors, isSubmitting },
-  } = methods;
+  const { handleSubmit, setValue } = methods;
+
+  const onSubmit = async (data) => {
+    data.accepted_time = format(new Date(data.accepted_time), 'HH:mm');
+    data.accepted_date = format(new Date(data.accepted_date), 'yyyy-MM-dd');
+    await acceptAppointment(currentId, data);
+
+    setIsFormOpen(false);
+    await updateData();
+  };
+
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [currentId, setCurrentId] = useState('');
+  const [ccid, setCcid] = useState(undefined);
+  const [isNotFound, setIsNotFound] = useState(false);
+
+  const updateData = async () => {
+    const { data } = await getAppointments();
+    setAppointment(data);
+  };
+
+  const search = async () => {
+    const { data, count } = await searchAppointment(ccid);
+    if (!count) {
+      setIsNotFound(true);
+    } else {
+      setAppointment(data);
+    }
+  };
+
+  const openForm = (data) => {
+    setIsFormOpen(true);
+    setCurrentId(data.id);
+    setValue('accepted_date', format(new Date(data.date), 'yyyy-MM-dd'));
+    setValue('accepted_time', new Date(`${data.date} ${data.time}`));
+  };
 
   const theme = useTheme();
-
   const getLabelInfor = (status) => {
     const convertedStatus = Number(status);
     switch (convertedStatus) {
@@ -97,38 +134,6 @@ export default function Appoinment({ appoinments }) {
           </Label>
         );
     }
-  };
-
-  const onSubmit = async (data) => {
-    data.accepted_time = format(new Date(data.accepted_time), 'HH:mm');
-    await acceptAppointment(currentId, data);
-
-    setIsFormOpen(false);
-    await updateData();
-  };
-
-  const [tableData, setAppointment] = useState(appoinments);
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [currentId, setCurrentId] = useState('');
-  const [ccid, setCcid] = useState(undefined);
-
-  const updateData = async () => {
-    const { data } = await getAppointments();
-    setAppointment(data);
-  };
-
-  const search = async () => {
-    const { data, count } = await searchAppointment(ccid);
-    if (count) {
-      setAppointment(data);
-    }
-  };
-
-  const openForm = (data) => {
-    setIsFormOpen(true);
-    setCurrentId(data.id);
-    setValue('accepted_date', format(new Date(data.date), 'yyyy-MM-dd'));
-    setValue('accepted_time', new Date(`${data.date} ${data.time}`));
   };
 
   return (
@@ -222,6 +227,8 @@ export default function Appoinment({ appoinments }) {
                       </TableCell>
                     </TableRow>
                   ))}
+
+                  <TableNoData isNotFound={isNotFound} />
                 </TableBody>
               </Table>
             </TableContainer>
@@ -231,6 +238,8 @@ export default function Appoinment({ appoinments }) {
     </Page>
   );
 }
+
+// ActionButton.PropTypes = {};
 
 const ActionButton = ({ status, id, updateData, openForm }) => {
   const isSubmitting = false;
